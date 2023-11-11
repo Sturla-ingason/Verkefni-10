@@ -1,3 +1,4 @@
+import { el } from './elements.js';
 /**
  * API föll.
  * @see https://lldev.thespacedevs.com/2.2.0/swagger/
@@ -33,7 +34,40 @@ export async function sleep(ms) {
  *  kom upp.
  */
 export async function searchLaunches(query) {
-  /* TODO útfæra */
+  /* Construct the URL so that it is correctly set before calling the API */
+  const url = new URL('launch', API_URL)
+  url.searchParams.set('search', query);
+  url.searchParams.set('mode', 'list');
+
+  let response
+
+  try{
+    /* calling the api */
+    response = await fetch(url);
+  }
+
+  catch (e){
+    console.error('Villa koma upp við að sækja gögn', e);
+    return null;
+  }
+
+  if (!response.ok){
+    console.error('Villa við að sækja gögn, ekki 200 staða', response.status, response.statusText);
+    return null;
+  }
+
+  try{
+    /* converting the response from the api to json */
+    const json = await response.json()
+    return json.results;
+  }
+
+  catch(e){
+    console.error('Villa við að vinna ur JSON');
+    return null;
+  }
+
+
 }
 
 /**
@@ -41,6 +75,25 @@ export async function searchLaunches(query) {
  * @param {string} id Auðkenni geimskots.
  * @returns {Promise<LaunchDetail | null>} Geimskot.
  */
-export async function getLaunch(id) {
+export async function getLaunch(result) {
   /* TODO útfæra */
+
+
+  history.pushState(null, null, result.id);
+
+  const e = document.createElement('button');
+  e.addEventListener('click', () => history.go(-1));
+  e.textContent = 'Til baka';
+
+  const missionElement = el('li', { class: 'result'},
+  el('span', {class: 'name'}, result.name),
+  el('img', {class: 'mynd', src: result.image}),
+  el('span', { class: 'status' }, result.status.name),
+  el('span', { class: 'mission' }, result.mission),
+  e
+  );
+
+
+  document.body.appendChild(missionElement);
+
 }
